@@ -1,0 +1,11 @@
+.env
+credentials.json
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+sessions/
+*.egg-info/
+dist/
+build/
+.DS_Store
