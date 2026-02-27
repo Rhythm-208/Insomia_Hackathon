@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InboxIQ — Smart Student Mail</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070d;
+  --surface: #10101a;
+  --surface2: #18182a;
+  --border: #25253a;
+  --text: #e8e8f2;
+  --text-dim: #7070a0;
+  --ac-accent: #5b8dee;
+  --ac-accent2: #a78bfa;
+  --ac-high: #f87171;
+  --ac-med: #fbbf24;
+  --ac-low: #34d399;
+  --cl-accent: #f97316;
+  --cl-accent2: #ec4899;
+  --cl-high: #fb923c;
+  --cl-med: #a78bfa;
+  --cl-low: #22d3ee;
+  --accent: #5b8dee;
+  --accent2: #a78bfa;
+  --high: #f87171;
+  --med: #fbbf24;
+  --low: #34d399;
+  --accent-rgb: 91,141,238;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── AUTH ── */
+#authScreen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 300;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  background: radial-gradient(ellipse at 20% 50%, rgba(91,141,238,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.06) 0%, transparent 50%), var(--bg);
+}
+.auth-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 28px; padding: 52px 48px; max-width: 440px; width: 90%;
+  text-align: center; position: relative; overflow: hidden;
+}
+.auth-card::before {
+  content:''; position:absolute; top:-60px; left:-60px; width:200px; height:200px;
+  border-radius:50%; background:radial-gradient(circle,rgba(91,141,238,0.15) 0%,transparent 70%); pointer-events:none;
+}
+.auth-logo { font-family:'Syne',sans-serif; font-size:38px; font-weight:800; margin-bottom:10px; letter-spacing:-1px; }
+.auth-logo .iq { color: var(--ac-accent); }
+.auth-tagline { color:var(--text-dim); font-size:14px; margin-bottom:36px; line-height:1.7; }
+.google-btn {
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  width:100%; padding:15px; border-radius:14px; background:white; color:#222;
+  border:none; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; font-size:15px;
+  transition:all 0.25s; margin-bottom:16px; letter-spacing:0.3px;
+}
+.google-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,255,255,0.12); }
+.google-btn:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+.auth-note { font-size:12px; color:var(--text-dim); line-height:1.6; }
+
+/* ── ONBOARDING ── */
+#onboardScreen {
+  position:fixed; inset:0; background:var(--bg); z-index:290;
+  display:none; align-items:center; justify-content:center;
+  background: radial-gradient(ellipse at 30% 60%, rgba(91,141,238,0.07) 0%, transparent 55%), var(--bg);
+}
+.onboard-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:28px; padding:48px; max-width:500px; width:92%; text-align:center;
+}
+.onboard-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; margin-bottom:8px; }
+.onboard-sub { color:var(--text-dim); font-size:13px; margin-bottom:32px; line-height:1.6; }
+.ob-field { margin-bottom:18px; text-align:left; }
+.ob-label { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.ob-input {
+  width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:12px;
+  padding:13px 16px; color:var(--text); font-family:'Nunito',sans-serif; font-size:14px; outline:none;
+  transition:border-color 0.2s;
+}
+.ob-input:focus { border-color:var(--accent); }
+
+/* ── MODE SELECTION ── */
+#modeScreen {
+  position:fixed; inset:0; z-index:200; display:none;
+  align-items:center; justify-content:center; background:var(--bg);
+  background-image: radial-gradient(ellipse at 15% 40%, rgba(91,141,238,0.07) 0%, transparent 55%),
+                    radial-gradient(ellipse at 85% 60%, rgba(249,115,22,0.07) 0%, transparent 55%);
+}
+.mode-screen-inner { text-align:center; max-width:900px; width:95%; padding:40px 20px; }
+.mode-eyebrow { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:3px; text-transform:uppercase; margin-bottom:20px; }
+.mode-title { font-family:'Syne',sans-serif; font-size:clamp(28px,5vw,46px); font-weight:800; margin-bottom:10px; letter-spacing:-1px; line-height:1.1; }
+.mode-sub { color:var(--text-dim); font-size:15px; margin-bottom:52px; line-height:1.6; }
+.mode-cards { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.mode-card {
+  border-radius:24px; padding:40px 32px; cursor:pointer;
+  border:2px solid transparent; transition:all 0.35s cubic-bezier(0.34,1.4,0.64,1);
+  position:relative; overflow:hidden; text-align:left;
+}
+.mode-card:hover { transform:translateY(-6px) scale(1.01); }
+.mode-card.academics { background:linear-gradient(145deg,rgba(91,141,238,0.12) 0%,rgba(167,139,250,0.06) 100%); border-color:rgba(91,141,238,0.25); }
+.mode-card.academics:hover { border-color:var(--ac-accent); box-shadow:0 20px 60px rgba(91,141,238,0.2); }
+.mode-card.campus { background:linear-gradient(145deg,rgba(249,115,22,0.1) 0%,rgba(236,72,153,0.06) 100%); border-color:rgba(249,115,22,0.2); }
+.mode-card.campus:hover { border-color:var(--cl-accent); box-shadow:0 20px 60px rgba(249,115,22,0.15); }
+.mode-icon { font-size:52px; margin-bottom:20px; display:block; }
+.mode-card-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; margin-bottom:10px; letter-spacing:-0.5px; }
+.mode-card.academics .mode-card-title { color:var(--ac-accent); }
+.mode-card.campus .mode-card-title { color:var(--cl-accent); }
+.mode-card-desc { color:var(--text-dim); font-size:13px; line-height:1.7; margin-bottom:24px; }
+.mode-features { display:flex; flex-direction:column; gap:8px; }
+.mode-feature { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--text); }
+.mode-feature-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.academics .mode-feature-dot { background:var(--ac-accent); }
+.campus .mode-feature-dot { background:var(--cl-accent); }
+.mode-cta {
+  display:inline-flex; align-items:center; gap:8px; margin-top:28px;
+  padding:12px 22px; border-radius:12px; border:none; cursor:pointer;
+  font-family:'Syne',sans-serif; font-weight:700; font-size:13px; transition:all 0.2s; letter-spacing:0.3px;
+}
+.academics .mode-cta { background:var(--ac-accent); color:white; }
+.campus .mode-cta { background:var(--cl-accent); color:white; }
+
+/* ── MAIN APP ── */
+#mainApp { display:none; grid-template-columns:264px 1fr; min-height:100vh; }
+.sidebar {
+  background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:24px 0;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.sidebar-logo { padding:0 24px 28px; display:flex; align-items:center; gap:10px; }
+.mode-pill { font-family:'DM Mono',monospace; font-size:10px; font-weight:500; padding:3px 10px; border-radius:20px; letter-spacing:1px; }
+.mode-pill.academics { background:rgba(91,141,238,0.15); color:var(--ac-accent); border:1px solid rgba(91,141,238,0.3); }
+.mode-pill.campus { background:rgba(249,115,22,0.12); color:var(--cl-accent); border:1px solid rgba(249,115,22,0.25); }
+.logo-text { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+.logo-iq { color:var(--accent); }
+.switch-mode-btn {
+  margin:0 16px 20px; padding:10px 14px; border-radius:12px;
+  border:1px dashed var(--border); background:transparent; color:var(--text-dim);
+  font-family:'Nunito',sans-serif; font-size:12px; cursor:pointer; transition:all 0.2s;
+  display:flex; align-items:center; gap:8px;
+}
+.switch-mode-btn:hover { border-color:var(--accent); color:var(--accent); }
+.nav-group { padding:0 12px; margin-bottom:6px; }
+.nav-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; padding:0 12px; margin-bottom:6px; }
+.nav-item {
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+  border-radius:12px; cursor:pointer; transition:all 0.18s;
+  font-size:14px; font-weight:600; color:var(--text-dim); position:relative;
+}
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:rgba(var(--accent-rgb),0.12); color:var(--accent); }
+.nav-item .icon { font-size:17px; width:22px; text-align:center; }
+.nav-badge { margin-left:auto; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; font-family:'DM Mono',monospace; background:var(--accent); color:var(--bg); }
+.nav-badge.danger { background:var(--high); }
+.sidebar-footer { margin-top:auto; padding:16px 20px; border-top:1px solid var(--border); }
+.user-row { display:flex; align-items:center; gap:12px; cursor:pointer; }
+.user-row:hover .user-name { color:var(--accent); }
+.user-av {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-weight:800; font-size:14px; color:white;
+  overflow:hidden;
+}
+.user-av img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.user-name { font-size:13px; font-weight:700; transition:color 0.2s; }
+.user-email-text { font-size:11px; color:var(--text-dim); }
+.logout-btn { margin-top:10px; width:100%; padding:8px; border-radius:10px; background:transparent; border:1px solid var(--border); color:var(--text-dim); font-family:'Nunito',sans-serif; font-size:12px; cursor:pointer; transition:all 0.2s; }
+.logout-btn:hover { border-color:var(--high); color:var(--high); }
+
+/* ── MAIN CONTENT ── */
+.main-content { overflow-y:auto; }
+.view { display:none; padding:36px 32px; }
+.view.active { display:block; }
+.page-hd { margin-bottom:28px; }
+.page-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; }
+.page-sub { color:var(--text-dim); font-size:13px; margin-top:5px; }
+.stats-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 18px; }
+.stat-num { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; }
+.stat-label { font-size:11px; color:var(--text-dim); margin-top:4px; letter-spacing:0.3px; font-family:'DM Mono',monospace; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px; margin-bottom:18px; }
+.card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+
+/* ── EMAILS ── */
+.email-controls { display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.search-box {
+  flex:1; min-width:180px; background:var(--surface);
+  border:1px solid var(--border); border-radius:12px;
+  padding:10px 16px; color:var(--text); font-family:'Nunito',sans-serif; font-size:13px; outline:none; transition:border-color 0.2s;
+}
+.search-box:focus { border-color:var(--accent); }
+.chips { display:flex; gap:6px; flex-wrap:wrap; }
+.chip { padding:6px 13px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim); transition:all 0.18s; font-family:'DM Mono',monospace; letter-spacing:0.5px; }
+.chip.active-all { background:rgba(91,141,238,0.15); color:var(--accent); border-color:rgba(91,141,238,0.4); }
+.chip.active-high { background:rgba(248,113,113,0.15); color:var(--high); border-color:rgba(248,113,113,0.4); }
+.chip.active-med { background:rgba(251,191,36,0.15); color:var(--med); border-color:rgba(251,191,36,0.4); }
+.chip.active-low { background:rgba(52,211,153,0.15); color:var(--low); border-color:rgba(52,211,153,0.4); }
+.email-list { display:flex; flex-direction:column; gap:10px; }
+.email-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:18px 20px; cursor:pointer; transition:all 0.22s; position:relative; overflow:hidden;
+}
+.email-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:3px 0 0 3px; }
+.email-card.q1::before { background:var(--high); }
+.email-card.q2::before { background:var(--med); }
+.email-card.q3::before { background:var(--low); }
+.email-card.q4::before { background:var(--text-dim); }
+.email-card.p-high::before { background:var(--high); }
+.email-card.p-med::before { background:var(--med); }
+.email-card.p-low::before { background:var(--low); }
+.email-card:hover { border-color:var(--accent); transform:translateX(3px); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.email-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.email-from { font-weight:700; font-size:13px; }
+.email-subj { font-weight:600; font-size:14px; margin-bottom:6px; }
+.email-sum { font-size:12px; color:var(--text-dim); line-height:1.55; }
+.email-meta-row { display:flex; align-items:center; gap:8px; }
+.pbadge { font-size:9px; font-weight:700; padding:2px 8px; border-radius:20px; font-family:'DM Mono',monospace; letter-spacing:0.5px; }
+.pbadge.high { background:rgba(248,113,113,0.2); color:var(--high); }
+.pbadge.med { background:rgba(251,191,36,0.2); color:var(--med); }
+.pbadge.low { background:rgba(52,211,153,0.15); color:var(--low); }
+.pbadge.q1 { background:rgba(248,113,113,0.2); color:var(--high); }
+.pbadge.q2 { background:rgba(251,191,36,0.2); color:var(--med); }
+.pbadge.q3 { background:rgba(52,211,153,0.15); color:var(--low); }
+.pbadge.q4 { background:rgba(112,112,160,0.15); color:var(--text-dim); }
+.edate { font-size:11px; color:var(--text-dim); font-family:'DM Mono',monospace; }
+.etags { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.etag { font-size:10px; padding:2px 8px; border-radius:4px; background:var(--surface2); color:var(--text-dim); border:1px solid var(--border); font-family:'DM Mono',monospace; }
+.email-btns { display:flex; gap:7px; margin-top:12px; }
+
+/* ── BUTTONS ── */
+.btn { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; border-radius:12px; border:none; font-family:'Syne',sans-serif; font-weight:700; font-size:13px; cursor:pointer; transition:all 0.2s; letter-spacing:0.2px; }
+.btn-primary { background:var(--accent); color:white; }
+.btn-primary:hover { filter:brightness(1.15); transform:translateY(-1px); }
+.btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+.btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+.btn-sm { padding:6px 13px; font-size:11px; border-radius:8px; }
+.btn-ghost { background:transparent; color:var(--text-dim); border:1px solid var(--border); }
+.btn-ghost:hover { color:var(--text); border-color:var(--text-dim); }
+
+/* ── PREFERENCES ── */
+.pref-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:30px; max-width:680px; margin-bottom:20px; }
+.pref-card h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; margin-bottom:6px; }
+.pref-card p { color:var(--text-dim); font-size:13px; line-height:1.6; margin-bottom:22px; }
+.form-group { margin-bottom:18px; }
+.flabel { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:1px; margin-bottom:8px; display:block; text-transform:uppercase; }
+.pref-ta { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px; color:var(--text); font-family:'Nunito',sans-serif; font-size:13px; line-height:1.7; min-height:120px; resize:vertical; outline:none; transition:border-color 0.2s; }
+.pref-ta:focus { border-color:var(--accent); }
+.pref-ta::placeholder { color:var(--text-dim); }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:12px; }
+.toggle-label { font-size:13px; font-weight:600; }
+.toggle-sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
+.toggle { position:relative; width:44px; height:24px; }
+.toggle input { display:none; }
+.toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:12px; cursor:pointer; transition:0.3s; }
+.toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:white; border-radius:50%; transition:0.3s; }
+.toggle input:checked + .toggle-slider { background:var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+.informal-cats { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.icat-chip { padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim); transition:all 0.18s; font-family:'DM Mono',monospace; }
+.icat-chip.active { background:rgba(249,115,22,0.15); color:var(--cl-accent); border-color:rgba(249,115,22,0.4); }
+
+/* ── CONNECT ── */
+.connect-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+.connect-card { background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:18px; display:flex; align-items:center; gap:12px; }
+.c-icon { font-size:26px; }
+.c-name { font-weight:700; font-size:13px; }
+.c-status { font-size:11px; color:var(--text-dim); margin-top:2px; }
+.c-status.ok { color:var(--low); }
+
+/* ── FEST ── */
+.fest-board { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-top:8px; }
+.fest-card { border-radius:16px; padding:22px; position:relative; overflow:hidden; cursor:pointer; transition:transform 0.22s,box-shadow 0.22s; }
+.fest-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.4); }
+.fest-card.orange { background:linear-gradient(135deg,rgba(249,115,22,0.2),rgba(251,191,36,0.1)); border:1px solid rgba(249,115,22,0.3); }
+.fest-card.pink { background:linear-gradient(135deg,rgba(236,72,153,0.18),rgba(167,139,250,0.1)); border:1px solid rgba(236,72,153,0.3); }
+.fest-card.cyan { background:linear-gradient(135deg,rgba(34,211,238,0.15),rgba(52,211,153,0.08)); border:1px solid rgba(34,211,238,0.3); }
+.fest-card.purple { background:linear-gradient(135deg,rgba(167,139,250,0.18),rgba(236,72,153,0.08)); border:1px solid rgba(167,139,250,0.3); }
+.fest-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px; font-weight:600; text-transform:uppercase; margin-bottom:12px; }
+.fest-card.orange .fest-badge { background:rgba(249,115,22,0.25); color:#fb923c; }
+.fest-card.pink .fest-badge { background:rgba(236,72,153,0.2); color:#f472b6; }
+.fest-card.cyan .fest-badge { background:rgba(34,211,238,0.2); color:#22d3ee; }
+.fest-card.purple .fest-badge { background:rgba(167,139,250,0.2); color:#a78bfa; }
+.fest-name { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; margin-bottom:6px; line-height:1.2; }
+.fest-desc { font-size:12px; color:var(--text-dim); line-height:1.55; margin-bottom:14px; }
+.fest-date { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); }
+.new-badge { position:absolute; top:16px; right:16px; background:var(--cl-accent2); color:white; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px; padding:2px 8px; border-radius:10px; font-weight:700; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+/* ── MESS ── */
+.mess-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:8px; }
+.mess-card { background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:18px; transition:border-color 0.2s; }
+.mess-card:hover { border-color:var(--cl-accent); }
+.mess-day { font-family:'Syne',sans-serif; font-size:13px; font-weight:800; margin-bottom:10px; color:var(--cl-accent); }
+.mess-meal { margin-bottom:10px; }
+.mess-meal-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+.mess-items { font-size:12px; color:var(--text); line-height:1.5; }
+
+/* ── MODAL ── */
+.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:500; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.modal-bg.open { opacity:1; pointer-events:all; }
+.modal-box { background:var(--surface); border:1px solid var(--border); border-radius:22px; padding:30px; max-width:620px; width:92%; max-height:84vh; overflow-y:auto; transform:scale(0.94); transition:transform 0.22s; }
+.modal-bg.open .modal-box { transform:scale(1); }
+.modal-hd { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+.modal-title-text { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; }
+.modal-x { width:30px; height:30px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+.modal-section { margin-bottom:18px; }
+.modal-sec-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; }
+.modal-body-text { font-size:13px; color:var(--text-dim); line-height:1.65; white-space:pre-wrap; }
+
+/* ── NOTIFICATION ── */
+#notif { position:fixed; top:20px; right:20px; z-index:9999; background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); color:var(--text); padding:14px 18px; border-radius:14px; font-size:13px; font-weight:600; box-shadow:0 8px 32px rgba(0,0,0,0.5); transform:translateX(120%); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width:320px; display:flex; align-items:center; gap:10px; }
+#notif.show { transform:translateX(0); }
+
+/* ── LOADING ── */
+.dots { display:inline-flex; gap:4px; align-items:center; }
+.dots span { width:5px; height:5px; background:currentColor; border-radius:50%; animation:db 0.8s ease-in-out infinite; }
+.dots span:nth-child(2) { animation-delay:0.15s; }
+.dots span:nth-child(3) { animation-delay:0.3s; }
+@keyframes db { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+.proc-banner { background:rgba(91,141,238,0.08); border:1px solid rgba(91,141,238,0.25); border-radius:10px; padding:11px 16px; margin-bottom:14px; display:none; align-items:center; gap:12px; font-size:12px; color:var(--text-dim); }
+.proc-banner.show { display:flex; }
+.empty-state { text-align:center; padding:60px 20px; color:var(--text-dim); }
+.empty-state .empty-icon { font-size:48px; margin-bottom:16px; }
+.empty-state p { font-size:14px; }
+.divider { height:1px; background:var(--border); margin:20px 0; }
+
+/* ── QUADRANT VIEW ── */
+.quadrant-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.quadrant-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px; }
+.q-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:800; margin-bottom:4px; }
+.q-sub { font-size:11px; color:var(--text-dim); margin-bottom:14px; }
+.q1-box { border-left:3px solid var(--high); }
+.q2-box { border-left:3px solid var(--med); }
+.q3-box { border-left:3px solid var(--low); }
+.q4-box { border-left:3px solid var(--text-dim); }
+.q-email-mini { padding:10px 12px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+.q-email-mini:hover { border-color:var(--accent); }
+.q-em-subj { font-size:12px; font-weight:700; margin-bottom:3px; }
+.q-em-from { font-size:11px; color:var(--text-dim); }
+
+@media (max-width:700px) {
+  .mode-cards { grid-template-columns:1fr; }
+  #mainApp { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  .quadrant-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="notif"><span id="notifIcon">🔔</span><span id="notifText"></span></div>
+
+<!-- ══════════ AUTH ══════════ -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">Inbox<span class="iq">IQ</span></div>
+    <div class="auth-tagline">Your AI-powered campus inbox.<br>Summarize, prioritize, and schedule everything — automatically.</div>
+    <button class="google-btn" id="loginBtn" onclick="doLogin()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-note">We access Gmail &amp; Google Calendar. Powered by Gemini AI. Your data stays yours.</div>
+  </div>
+</div>
+
+<!-- ══════════ ONBOARDING ══════════ -->
+<div id="onboardScreen">
+  <div class="onboard-card">
+    <div class="onboard-title">One last thing 👋</div>
+    <div class="onboard-sub">Tell us a bit about yourself so we can set up your InboxIQ perfectly.</div>
+    <div class="ob-field">
+      <label class="ob-label">Your Name</label>
+      <input class="ob-input" id="obName" type="text" placeholder="e.g. Ravi Kumar" />
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Roll Number</label>
+      <input class="ob-input" id="obRoll" type="text" placeholder="e.g. B21CS001" />
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="submitProfile()">
+      Continue →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ PREFERENCES ONBOARDING ══════════ -->
+<div id="prefsOnboardScreen" style="position:fixed;inset:0;background:var(--bg);z-index:280;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 30%,rgba(91,141,238,0.07) 0%,transparent 55%),var(--bg);">
+  <div class="onboard-card" style="max-width:560px;">
+    <div class="onboard-title">What do you care about? 🎯</div>
+    <div class="onboard-sub">Tell Gemini AI your interests and it'll prioritize your inbox accordingly.</div>
+    <div class="ob-field">
+      <label class="ob-label">Describe your interests</label>
+      <textarea class="pref-ta" id="prefText" placeholder="e.g. I'm into AI and machine learning, attend coding club. Also interested in cultural fests and the college cricket team. Don't care about spam food deals." style="min-height:140px;"></textarea>
+    </div>
+    <div style="margin-bottom:18px;">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Show Informal Emails</div>
+          <div class="toggle-sub">Food deals, restaurant offers, hostel notices</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="obInformals" checked><div class="toggle-slider"></div></label>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitPreferences()">
+      <span id="prefBtnText">Save & Fetch My Emails →</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ MODE SCREEN ══════════ -->
+<div id="modeScreen">
+  <div class="mode-screen-inner">
+    <div class="mode-eyebrow" id="modeWelcome">Welcome — choose your view</div>
+    <div class="mode-title">What would you like<br>to manage today?</div>
+    <div class="mode-sub">InboxIQ sorts your emails into two worlds.<br>Switch anytime from the sidebar.</div>
+    <div class="mode-cards">
+      <div class="mode-card academics" onclick="selectMode('academics')">
+        <span class="mode-icon">🎓</span>
+        <div class="mode-card-title">Academics</div>
+        <div class="mode-card-desc">Your academic life, organized. Assignments, club activities, placements, and lectures — all prioritized by Gemini AI based on your interests.</div>
+        <div class="mode-features">
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Assignment &amp; exam deadlines</div>
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Club &amp; hackathon updates</div>
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Placement &amp; internship alerts</div>
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Faculty announcements</div>
+        </div>
+        <button class="mode-cta">Open Academics →</button>
+      </div>
+      <div class="mode-card campus" onclick="selectMode('campus')">
+        <span class="mode-icon">🏕️</span>
+        <div class="mode-card-title">Campus Life</div>
+        <div class="mode-card-desc">Everything beyond the classroom. Mess menus, restaurant deals, fest updates, sports events — your campus social life, curated and live.</div>
+        <div class="mode-features">
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Mess menu &amp; food offers</div>
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Fest &amp; cultural event updates</div>
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Sports &amp; hobby club events</div>
+          <div class="mode-feature"><div class="mode-feature-dot"></div>Restaurant deals near campus</div>
+        </div>
+        <button class="mode-cta">Open Campus Life →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="mainApp" style="display:none;grid-template-columns:264px 1fr;">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div>
+        <div class="logo-text">Inbox<span class="logo-iq">IQ</span></div>
+      </div>
+      <div class="mode-pill" id="modePill">ACAD</div>
+    </div>
+    <button class="switch-mode-btn" onclick="goModeSelect()">⇄ Switch Mode</button>
+    <div class="nav-group" id="navMain"></div>
+    <div class="nav-group" style="margin-top:10px;" id="navSettings"></div>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-av" id="userAv">?</div>
+        <div>
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-email-text" id="userEmail"></div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </aside>
+  <main class="main-content" id="mainContent"></main>
+</div>
+
+<!-- ══════════ EMAIL MODAL ══════════ -->
+<div class="modal-bg" id="emailModal">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-title-text" id="mTitle"></div>
+      <div class="modal-x" onclick="closeModal()">✕</div>
+    </div>
+    <div id="mPriority" style="margin-bottom:14px;"></div>
+    <div class="modal-section">
+      <div class="modal-sec-title">✨ Gemini AI Summary</div>
+      <div class="modal-body-text" id="mSummary"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-sec-title">📄 Original Email</div>
+      <div class="modal-body-text" id="mBody" style="opacity:0.6;font-size:12px;"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+const API = 'http://localhost:8000';
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let currentUser = null;
+let mode = 'academics';
+let activeView = 'dashboard';
+let currentFilter = 'all';
+let searchQ = '';
+let allEmails = [];
+let emailCounts = { Q1:0, Q2:0, Q3:0, Q4:0, informal:0 };
+
+/* ════════════════════════════════════════
+   API HELPERS
+════════════════════════════════════════ */
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    ...opts
+  });
+  return res;
+}
+
+/* ════════════════════════════════════════
+   BOOT — check if already logged in
+════════════════════════════════════════ */
+async function boot() {
+  // Check if coming back from OAuth callback (onboarding flag)
+  const params = new URLSearchParams(window.location.search);
+  
+  try {
+    const res = await api('/auth/me/');
+    if (res.ok) {
+      const user = await res.json();
+      if (user.logged_in) {
+        currentUser = user;
+        updateUserUI();
+        
+        // Check if profile is complete
+        if (!user.roll_no) {
+          showOnboarding();
+          return;
+        }
+        
+        // Check if preferences exist
+        const prefRes = await api('/api/emails/preferences/get/');
+        const prefData = await prefRes.json();
+        if (!prefData.has_preferences) {
+          showPrefsOnboarding();
+          return;
+        }
+        
+        showModeScreen();
+        return;
+      }
+    }
+  } catch(e) {}
+  
+  // Not logged in — show auth
+  document.getElementById('authScreen').style.display = 'flex';
+}
+
+/* ════════════════════════════════════════
+   AUTH
+════════════════════════════════════════ */
+async function doLogin() {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="dots" style="color:#5b8dee"><span></span><span></span><span></span></div>&nbsp;Connecting to Google...';
+  try {
+    const res = await api('/auth/login/');
+    const data = await res.json();
+    if (data.auth_url) {
+      window.location.href = data.auth_url;
+    } else {
+      notify('Login failed. Try again.', '❌');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google';
+    }
+  } catch(e) {
+    notify('Cannot reach server. Is Django running?', '❌');
+    btn.disabled = false;
+  }
+}
+
+async function doLogout() {
+  await api('/auth/logout/', { method: 'GET' });
+  currentUser = null;
+  allEmails = [];
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google';
+}
+
+/* ════════════════════════════════════════
+   SCREEN TRANSITIONS
+════════════════════════════════════════ */
+function hideAll() {
+  ['authScreen','onboardScreen','prefsOnboardScreen','modeScreen'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('mainApp').style.display = 'none';
+}
+
+function showOnboarding() {
+  hideAll();
+  if (currentUser) {
+    document.getElementById('obName').value = currentUser.name || '';
+  }
+  document.getElementById('onboardScreen').style.display = 'flex';
+}
+
+function showPrefsOnboarding() {
+  hideAll();
+  document.getElementById('prefsOnboardScreen').style.display = 'flex';
+}
+
+function showModeScreen() {
+  hideAll();
+  if (currentUser) {
+    document.getElementById('modeWelcome').textContent = `Welcome back, ${currentUser.name.split(' ')[0]} 👋 — choose your view`;
+  }
+  document.getElementById('modeScreen').style.display = 'flex';
+}
+
+/* ════════════════════════════════════════
+   ONBOARDING
+════════════════════════════════════════ */
+async function submitProfile() {
+  const name = document.getElementById('obName').value.trim();
+  const roll = document.getElementById('obRoll').value.trim();
+  if (!name || !roll) { notify('Please fill in both fields', '⚠️'); return; }
+  
+  try {
+    const res = await api('/auth/profile/', {
+      method: 'POST',
+      body: JSON.stringify({ name, roll_no: roll })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (currentUser) { currentUser.name = name; currentUser.roll_no = roll; }
+      showPrefsOnboarding();
+    } else {
+      notify(data.error || 'Error saving profile', '❌');
+    }
+  } catch(e) {
+    notify('Server error', '❌');
+  }
+}
+
+async function submitPreferences() {
+  const text = document.getElementById('prefText').value.trim();
+  if (!text) { notify('Please describe your interests', '⚠️'); return; }
+  
+  const informals = document.getElementById('obInformals').checked;
+  const btn = document.getElementById('prefBtnText');
+  btn.innerHTML = '<div class="dots"><span></span><span></span><span></span></div> Gemini is learning your preferences...';
+  
+  try {
+    const res = await api('/api/emails/preferences/', {
+      method: 'POST',
+      body: JSON.stringify({ text, informals, informal_categories: ['food', 'deals'] })
+    });
+    const data = await res.json();
+    if (data.success) {
+      notify('✅ Preferences saved! Fetching emails...', '✨');
+      // Auto-fetch emails
+      await fetchEmails();
+      showModeScreen();
+    } else {
+      notify(data.error || 'Error saving preferences', '❌');
+      btn.textContent = 'Save & Fetch My Emails →';
+    }
+  } catch(e) {
+    notify('Server error', '❌');
+    btn.textContent = 'Save & Fetch My Emails →';
+  }
+}
+
+/* ════════════════════════════════════════
+   EMAIL FETCH
+════════════════════════════════════════ */
+async function fetchEmails() {
+  try {
+    const res = await api('/api/emails/fetch/', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      notify(`✨ ${data.fetched} emails fetched, ${data.classified} classified`, '✨');
+      await loadEmails();
+    }
+  } catch(e) {
+    console.error('Fetch error', e);
+  }
+}
+
+async function loadEmails() {
+  try {
+    const res = await api('/api/emails/');
+    const data = await res.json();
+    if (data.success) {
+      allEmails = data.emails || [];
+      emailCounts = data.counts || { Q1:0, Q2:0, Q3:0, Q4:0, informal:0 };
+      updateBadges();
+    }
+  } catch(e) {
+    console.error('Load emails error', e);
+  }
+}
+
+async function refreshEmails() {
+  const banner = document.getElementById('procBanner');
+  if (banner) { banner.classList.add('show'); banner.textContent = '⏳ Fetching latest emails from Gmail...'; }
+  notify('⏳ Syncing Gmail...', '⏳');
+  await fetchEmails();
+  if (banner) banner.classList.remove('show');
+  renderView(activeView);
+}
+
+function updateBadges() {
+  const q1Badge = document.getElementById('nb-high');
+  const notifBadge = document.getElementById('nb-notif');
+  if (q1Badge) q1Badge.textContent = emailCounts.Q1 || '';
+  if (q1Badge) q1Badge.style.display = emailCounts.Q1 ? '' : 'none';
+}
+
+/* ════════════════════════════════════════
+   MAIN APP
+════════════════════════════════════════ */
+function selectMode(m) {
+  mode = m;
+  hideAll();
+  applyModeTheme();
+  document.getElementById('mainApp').style.display = 'grid';
+  updateUserUI();
+  buildSidebar();
+  loadEmails().then(() => renderView('dashboard'));
+  loadNotifications();
+}
+
+function goModeSelect() {
+  document.getElementById('mainApp').style.display = 'none';
+  showModeScreen();
+}
+
+function applyModeTheme() {
+  const r = document.documentElement.style;
+  if (mode === 'academics') {
+    r.setProperty('--accent', '#5b8dee');
+    r.setProperty('--accent2', '#a78bfa');
+    r.setProperty('--high', '#f87171');
+    r.setProperty('--med', '#fbbf24');
+    r.setProperty('--low', '#34d399');
+    r.setProperty('--accent-rgb', '91,141,238');
+  } else {
+    r.setProperty('--accent', '#f97316');
+    r.setProperty('--accent2', '#ec4899');
+    r.setProperty('--high', '#fb923c');
+    r.setProperty('--med', '#a78bfa');
+    r.setProperty('--low', '#22d3ee');
+    r.setProperty('--accent-rgb', '249,115,22');
+  }
+  const pill = document.getElementById('modePill');
+  if (pill) {
+    pill.className = 'mode-pill ' + mode;
+    pill.textContent = mode === 'academics' ? 'ACAD' : 'CAMPUS';
+  }
+}
+
+function updateUserUI() {
+  if (!currentUser) return;
+  const av = document.getElementById('userAv');
+  const nm = document.getElementById('userName');
+  const em = document.getElementById('userEmail');
+  if (av) {
+    if (currentUser.picture) {
+      av.innerHTML = `<img src="${currentUser.picture}" alt="${currentUser.name}">`;
+    } else {
+      av.textContent = (currentUser.name || '?')[0].toUpperCase();
+    }
+  }
+  if (nm) nm.textContent = currentUser.name || 'User';
+  if (em) em.textContent = currentUser.email || '';
+  
+  const mw = document.getElementById('modeWelcome');
+  if (mw) mw.textContent = `Welcome back, ${(currentUser.name || 'User').split(' ')[0]} 👋 — choose your view`;
+}
+
+function buildSidebar() {
+  const main = document.getElementById('navMain');
+  const settings = document.getElementById('navSettings');
+  const q1c = emailCounts.Q1 || 0;
+  
+  if (mode === 'academics') {
+    main.innerHTML = `
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="nav(this,'dashboard')"><span class="icon">⚡</span>Dashboard<span class="nav-badge danger" id="nb-high" style="${q1c?'':'display:none'">${q1c}</span></div>
+      <div class="nav-item" onclick="nav(this,'inbox')"><span class="icon">📬</span>Inbox</div>
+      <div class="nav-item" onclick="nav(this,'quadrant')"><span class="icon">⊞</span>Quadrant View</div>
+      <div class="nav-label" style="margin-top:16px;">Campus</div>
+      <div class="nav-item" onclick="nav(this,'fests')"><span class="icon">🎉</span>Fests &amp; Events</div>
+    `;
+  } else {
+    main.innerHTML = `
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="nav(this,'dashboard')"><span class="icon">⚡</span>Dashboard<span class="nav-badge danger" id="nb-high" style="${q1c?'':'display:none'">${q1c}</span></div>
+      <div class="nav-item" onclick="nav(this,'inbox')"><span class="icon">📬</span>Inbox</div>
+      <div class="nav-item" onclick="nav(this,'quadrant')"><span class="icon">⊞</span>Quadrant View</div>
+      <div class="nav-label" style="margin-top:16px;">Campus Life</div>
+      <div class="nav-item" onclick="nav(this,'fests')"><span class="icon">🎉</span>Fests &amp; Events</div>
+      <div class="nav-item" onclick="nav(this,'mess')"><span class="icon">🍛</span>Mess Menu</div>
+    `;
+  }
+  
+  settings.innerHTML = `
+    <div class="nav-label">Settings</div>
+    <div class="nav-item" onclick="nav(this,'preferences')"><span class="icon">🎯</span>Preferences</div>
+    <div class="nav-item" onclick="nav(this,'connect')"><span class="icon">🔗</span>API Connect</div>
+  `;
+}
+
+function nav(el, view) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  renderView(view);
+}
+
+function renderView(v) {
+  activeView = v;
+  const mc = document.getElementById('mainContent');
+  if (v === 'dashboard') mc.innerHTML = buildDashboard();
+  else if (v === 'inbox') mc.innerHTML = buildInbox();
+  else if (v === 'quadrant') mc.innerHTML = buildQuadrant();
+  else if (v === 'preferences') mc.innerHTML = buildPreferences();
+  else if (v === 'connect') mc.innerHTML = buildConnect();
+  else if (v === 'fests') mc.innerHTML = buildFests();
+  else if (v === 'mess') mc.innerHTML = buildMess();
+}
+
+/* ════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════ */
+function buildDashboard() {
+  const q1 = allEmails.filter(e => e.quadrant === 'Q1');
+  const q2 = allEmails.filter(e => e.quadrant === 'Q2');
+  const informal = allEmails.filter(e => e.is_informal);
+  const total = allEmails.length;
+
+  const q1Cards = q1.slice(0,3).map(e => emailCardHtml(e)).join('') ||
+    '<div class="empty-state"><div class="empty-icon">✅</div><p>No urgent emails right now</p></div>';
+  
+  const q2Cards = q2.slice(0,2).map(e => emailCardHtml(e)).join('') || '';
+
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">Dashboard ⚡</div>
+        <div class="page-sub">AI-prioritized inbox · ${total} emails classified</div>
+      </div>
+      <div id="procBanner" class="proc-banner"></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" style="color:var(--high)">${emailCounts.Q1||0}</div><div class="stat-label">Q1 · Urgent</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--med)">${emailCounts.Q2||0}</div><div class="stat-label">Q2 · Important</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--low)">${emailCounts.Q3||0}</div><div class="stat-label">Q3 · Later</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--text-dim)">${emailCounts.Q4||0}</div><div class="stat-label">Q4 · Archive</div></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button class="btn btn-primary btn-sm" onclick="refreshEmails()">↻ Sync Gmail</button>
+        <button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('.nav-item'),'inbox')">View All →</button>
+      </div>
+      ${q1.length ? `
+      <div class="card">
+        <div class="card-title"><span style="color:var(--high)">🔥</span> Urgent — Needs Attention</div>
+        <div class="email-list">${q1Cards}</div>
+      </div>` : ''}
+      ${q2.length ? `
+      <div class="card">
+        <div class="card-title"><span style="color:var(--med)">⚠️</span> Important — Review Soon</div>
+        <div class="email-list">${q2Cards}</div>
+      </div>` : ''}
+      ${!total ? `
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p style="margin-bottom:16px;">No emails yet. Click Sync Gmail to fetch your inbox.</p>
+          <button class="btn btn-primary" onclick="refreshEmails()">↻ Sync Gmail Now</button>
+        </div>
+      </div>` : ''}
+    </div>`;
+}
+
+/* ════════════════════════════════════════
+   INBOX
+════════════════════════════════════════ */
+function buildInbox() {
+  const filtered = getFilteredEmails();
+  const cards = filtered.length
+    ? filtered.map(e => emailCardHtml(e)).join('')
+    : '<div class="empty-state"><div class="empty-icon">🔍</div><p>No emails match your filter</p></div>';
+
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">Inbox 📬</div>
+        <div class="page-sub">Emails sorted by Gemini AI based on your preferences</div>
+      </div>
+      <div class="email-controls">
+        <input class="search-box" placeholder="🔍 Search emails..." value="${searchQ}" oninput="searchEmails(this.value)">
+        <div class="chips">
+          <button class="chip ${currentFilter==='all'?'active-all':''}" onclick="setF('all')">ALL</button>
+          <button class="chip ${currentFilter==='Q1'?'active-high':''}" onclick="setF('Q1')">🔥 Q1</button>
+          <button class="chip ${currentFilter==='Q2'?'active-med':''}" onclick="setF('Q2')">⚠️ Q2</button>
+          <button class="chip ${currentFilter==='Q3'?'active-low':''}" onclick="setF('Q3')">✅ Q3</button>
+          <button class="chip ${currentFilter==='informal'?'active-all':''}" onclick="setF('informal')">🍕 Informal</button>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="refreshEmails()">↻ Sync</button>
+      </div>
+      <div class="email-list">${cards}</div>
+    </div>`;
+}
+
+function getFilteredEmails() {
+  let emails = [...allEmails];
+  if (currentFilter === 'informal') emails = emails.filter(e => e.is_informal);
+  else if (currentFilter !== 'all') emails = emails.filter(e => e.quadrant === currentFilter);
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    emails = emails.filter(e =>
+      (e.subject||'').toLowerCase().includes(q) ||
+      (e.summary||'').toLowerCase().includes(q) ||
+      (e.sender||'').toLowerCase().includes(q) ||
+      (e.class||'').toLowerCase().includes(q)
+    );
+  }
+  return emails;
+}
+
+function searchEmails(q) {
+  searchQ = q.toLowerCase();
+  renderView('inbox');
+}
+
+function setF(f) { currentFilter = f; renderView('inbox'); }
+
+/* ════════════════════════════════════════
+   QUADRANT VIEW
+════════════════════════════════════════ */
+function buildQuadrant() {
+  const qs = ['Q1','Q2','Q3','Q4'];
+  const labels = { Q1:'🔥 Urgent + Important', Q2:'⚠️ Important, Not Urgent', Q3:'✅ Urgent, Less Important', Q4:'📁 Archive' };
+  const subs = { Q1:'Act immediately', Q2:'Schedule time for these', Q3:'Delegate or quick-handle', Q4:'Low value — review later' };
+  const cls = { Q1:'q1-box', Q2:'q2-box', Q3:'q3-box', Q4:'q4-box' };
+
+  const boxes = qs.map(q => {
+    const emails = allEmails.filter(e => e.quadrant === q).slice(0, 5);
+    const items = emails.length
+      ? emails.map(e => `<div class="q-email-mini" onclick="openEmail('${e._id||e.gmail_id}')"><div class="q-em-subj">${e.subject||'(no subject)'}</div><div class="q-em-from">${e.sender||''}</div></div>`).join('')
+      : `<div style="color:var(--text-dim);font-size:12px;padding:8px 0;">No emails</div>`;
+    return `<div class="quadrant-box ${cls[q]}"><div class="q-title">${labels[q]}</div><div class="q-sub">${subs[q]}</div>${items}</div>`;
+  }).join('');
+
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">Eisenhower Matrix ⊞</div>
+        <div class="page-sub">Emails organized by importance × urgency</div>
+      </div>
+      <div class="quadrant-grid">${boxes}</div>
+    </div>`;
+}
+
+/* ════════════════════════════════════════
+   EMAIL CARD
+════════════════════════════════════════ */
+function emailCardHtml(e) {
+  const q = e.quadrant || 'Q4';
+  const qMap = { Q1:'🔥 Q1', Q2:'⚠️ Q2', Q3:'✅ Q3', Q4:'📁 Q4' };
+  const pMap = { Q1:'high', Q2:'med', Q3:'low', Q4:'' };
+  const cls = e.is_informal ? 'p-low' : (q === 'Q1' ? 'p-high' : q === 'Q2' ? 'p-med' : 'p-low');
+  const badge = pMap[q] || '';
+  const classTag = e.class ? `<span class="etag">${e.class}</span>` : '';
+  const infTag = e.is_informal ? `<span class="etag" style="color:var(--cl-accent);border-color:rgba(249,115,22,0.3)">🍕 informal</span>` : '';
+  
+  return `
+    <div class="email-card ${cls}" onclick="openEmail('${e._id||e.gmail_id}')">
+      <div class="email-top">
+        <div class="email-from">${e.sender_full||e.sender||'Unknown'}</div>
+        <div class="edate">${formatDate(e.date)}</div>
+      </div>
+      <div class="email-subj">${e.subject||'(no subject)'}</div>
+      <div class="email-sum">${e.summary||e.snippet||''}</div>
+      <div class="email-meta-row" style="margin-top:10px;">
+        ${badge ? `<span class="pbadge ${badge}">${qMap[q]}</span>` : ''}
+        ${classTag}${infTag}
+      </div>
+    </div>`;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  try {
+    const dt = new Date(d);
+    const now = new Date();
+    const diff = now - dt;
+    if (diff < 86400000) return dt.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+    if (diff < 604800000) return dt.toLocaleDateString('en-IN', {weekday:'short'});
+    return dt.toLocaleDateString('en-IN', {day:'numeric',month:'short'});
+  } catch(e) { return d; }
+}
+
+/* ════════════════════════════════════════
+   OPEN EMAIL MODAL
+════════════════════════════════════════ */
+function openEmail(id) {
+  const email = allEmails.find(e => (e._id || e.gmail_id) === id);
+  if (!email) return;
+  
+  document.getElementById('mTitle').textContent = email.subject || '(no subject)';
+  
+  const q = email.quadrant || 'Q4';
+  const qColors = { Q1: 'var(--high)', Q2: 'var(--med)', Q3: 'var(--low)', Q4: 'var(--text-dim)' };
+  const qLabels = { Q1: '🔥 Q1 — Urgent & Important', Q2: '⚠️ Q2 — Important', Q3: '✅ Q3 — Urgent', Q4: '📁 Q4 — Archive' };
+  document.getElementById('mPriority').innerHTML = `
+    <span style="font-size:11px;font-family:'DM Mono',monospace;color:${qColors[q]};background:rgba(255,255,255,0.05);padding:3px 10px;border-radius:6px;">
+      ${qLabels[q]} · ${email.class||'OTHER'} · ${email.sender||''}
+    </span>`;
+  
+  document.getElementById('mSummary').textContent = email.summary || 'No summary available.';
+  document.getElementById('mBody').textContent = email.body || email.snippet || '(No body available)';
+  
+  document.getElementById('emailModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('emailModal').classList.remove('open');
+}
+
+/* ════════════════════════════════════════
+   FESTS & MESS (static for now — from college_data)
+════════════════════════════════════════ */
+const FEST_EVENTS = [
+  { color:'orange', badge:'ONGOING', name:'Spandan 2024', desc:'Annual college fest with 40+ events — music, dance, gaming, fashion, dramatics.', date:'Mar 14–16, 2024', isNew:true },
+  { color:'pink', badge:'UPCOMING', name:'Technovation', desc:'Biggest technical fest — Hackathon, robotics war, coding relay, guest talks.', date:'Apr 5–7, 2024', isNew:false },
+  { color:'cyan', badge:'UPCOMING', name:'Sportz Carnival', desc:'Inter-hostel sports extravaganza. Cricket, football, badminton, chess.', date:'Mar 22–23, 2024', isNew:true },
+  { color:'purple', badge:'REGISTRATIONS OPEN', name:'Filmique Film Fest', desc:'Student film festival celebrating indie filmmakers. Short films & workshops.', date:'Mar 30, 2024', isNew:false },
+];
+
+const MESS_MENU = [
+  { day:'MON', lunch:'Dal Tadka, Roti, Rice, Sabzi', dinner:'Rajma, Rice, Chapati, Salad' },
+  { day:'TUE', lunch:'Chole, Puri, Rice, Raita', dinner:'Mixed Veg, Dal, Roti, Rice' },
+  { day:'WED', lunch:'Paneer Curry, Roti, Rice', dinner:'Aloo Matar, Dal, Chapati' },
+  { day:'THU', lunch:'🍛 SPECIAL BIRYANI + Raita', dinner:'Dal Makhani, Roti, Rice' },
+  { day:'FRI', lunch:'Kadhi Pakora, Rice, Roti', dinner:'Chana Dal, Sabzi, Chapati' },
+  { day:'SAT', lunch:'Veg Pulao, Raita, Salad', dinner:'Mix Dal, Roti, Rice, Pickle' },
+  { day:'SUN', lunch:'🎉 Chole Bhature + Halwa', dinner:'Paneer, Roti, Rice, Salad' },
+];
+
+function buildFests() {
+  const cards = FEST_EVENTS.map(f => `
+    <div class="fest-card ${f.color}">
+      ${f.isNew ? '<span class="new-badge">NEW</span>' : ''}
+      <span class="fest-badge">${f.badge}</span>
+      <div class="fest-name">${f.name}</div>
+      <div class="fest-desc">${f.desc}</div>
+      <div class="fest-date">📅 ${f.date}</div>
+    </div>`).join('');
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">Fests &amp; Events 🎉</div>
+        <div class="page-sub">Upcoming events at IITJ — auto-synced from your emails</div>
+      </div>
+      <div class="fest-board">${cards}</div>
+    </div>`;
+}
+
+function buildMess() {
+  const today = ['SUN','MON','TUE','WED','THU','FRI','SAT'][new Date().getDay()];
+  const cards = MESS_MENU.map(m => `
+    <div class="mess-card" style="${m.day===today?'border-color:var(--cl-accent);':''}>
+      <div class="mess-day">${m.day}${m.day===today?' ← Today':''}</div>
+      <div class="mess-meal">
+        <div class="mess-meal-label">Lunch</div>
+        <div class="mess-items">${m.lunch}</div>
+      </div>
+      <div class="mess-meal">
+        <div class="mess-meal-label">Dinner</div>
+        <div class="mess-items">${m.dinner}</div>
+      </div>
+    </div>`).join('');
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">Mess Menu 🍛</div>
+        <div class="page-sub">Weekly mess schedule — updated from official emails</div>
+      </div>
+      <div class="mess-grid">${cards}</div>
+    </div>`;
+}
+
+/* ════════════════════════════════════════
+   PREFERENCES
+════════════════════════════════════════ */
+let savedPrefs = null;
+
+async function buildPreferences() {
+  // Load current prefs
+  try {
+    const res = await api('/api/emails/preferences/get/');
+    const data = await res.json();
+    if (data.has_preferences) savedPrefs = data.preferences;
+  } catch(e) {}
+  
+  const rawText = savedPrefs ? savedPrefs.raw_text : '';
+  const informals = savedPrefs ? savedPrefs.informals_enabled : true;
+  const cats = savedPrefs ? (savedPrefs.informal_categories || ['food','deals']) : ['food','deals'];
+  
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">Preferences 🎯</div>
+        <div class="page-sub">Tell Gemini AI what you care about to reprioritize your inbox</div>
+      </div>
+      <div class="pref-card">
+        <h3>Your Interests</h3>
+        <p>Describe your interests and Gemini AI will reprioritize your entire inbox based on what matters to you.</p>
+        <div class="form-group">
+          <label class="flabel">What do you care about?</label>
+          <textarea class="pref-ta" id="prefTextMain" placeholder="e.g. I'm into AI and ML, active in coding club. Love cricket and attend cultural fests. Not interested in hostel deals.">${rawText}</textarea>
+        </div>
+        <button class="btn btn-primary" onclick="savePreferences()">
+          <span id="savePrefBtn">✨ Update with Gemini AI</span>
+        </button>
+      </div>
+      <div class="pref-card">
+        <h3>Informal Emails</h3>
+        <p>Control whether food deals, restaurant offers, and hostel notices appear in your inbox.</p>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Show Informal Emails</div>
+            <div class="toggle-sub">Food deals, restaurant offers, hostel notices</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="informalsToggle" ${informals?'checked':''}><div class="toggle-slider"></div></label>
+        </div>
+        <div style="margin-top:8px;">
+          <label class="flabel">Categories</label>
+          <div class="informal-cats">
+            <button class="icat-chip ${cats.includes('food')?'active':''}" onclick="toggleCat(this,'food')">🍕 Food</button>
+            <button class="icat-chip ${cats.includes('deals')?'active':''}" onclick="toggleCat(this,'deals')">💸 Deals</button>
+            <button class="icat-chip ${cats.includes('hostel')?'active':''}" onclick="toggleCat(this,'hostel')">🏠 Hostel</button>
+            <button class="icat-chip ${cats.includes('events')?'active':''}" onclick="toggleCat(this,'events')">🎪 Events</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleCat(el, cat) { el.classList.toggle('active'); }
+
+async function savePreferences() {
+  const text = document.getElementById('prefTextMain').value.trim();
+  if (!text) { notify('Please describe your interests', '⚠️'); return; }
+  const informals = document.getElementById('informalsToggle').checked;
+  const cats = [...document.querySelectorAll('.icat-chip.active')].map(el => el.dataset.cat || el.textContent.replace(/[^a-z]/gi,'').toLowerCase().trim());
+  
+  const btn = document.getElementById('savePrefBtn');
+  btn.innerHTML = '<div class="dots"><span></span><span></span><span></span></div> Gemini is re-learning...';
+  
+  try {
+    const res = await api('/api/emails/preferences/', {
+      method: 'POST',
+      body: JSON.stringify({ text, informals, informal_categories: cats })
+    });
+    const data = await res.json();
+    if (data.success) {
+      notify('✅ Preferences updated! Re-classifying emails...', '✨');
+      await fetchEmails();
+      btn.textContent = '✨ Update with Gemini AI';
+      renderView('preferences');
+    } else {
+      notify(data.error || 'Error', '❌');
+      btn.textContent = '✨ Update with Gemini AI';
+    }
+  } catch(e) {
+    notify('Server error', '❌');
+    btn.textContent = '✨ Update with Gemini AI';
+  }
+}
+
+/* ════════════════════════════════════════
+   CONNECT
+════════════════════════════════════════ */
+function buildConnect() {
+  return `
+    <div class="view active">
+      <div class="page-hd">
+        <div class="page-title">API Connections 🔗</div>
+        <div class="page-sub">Manage your connected services</div>
+      </div>
+      <div class="connect-grid">
+        <div class="connect-card">
+          <div class="c-icon">📧</div>
+          <div>
+            <div class="c-name">Gmail API</div>
+            <div class="c-status ok">● Connected</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="refreshEmails()">Sync Now</button>
+        </div>
+        <div class="connect-card">
+          <div class="c-icon">📅</div>
+          <div>
+            <div class="c-name">Google Calendar</div>
+            <div class="c-status ok">● Connected</div>
+          </div>
+        </div>
+        <div class="connect-card" style="grid-column:span 2">
+          <div class="c-icon">✨</div>
+          <div>
+            <div class="c-name">Gemini AI API</div>
+            <div class="c-status ok">● Active — gemini-1.5-flash</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Account</div>
+        ${currentUser ? `
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+            <div class="user-av" style="width:52px;height:52px;font-size:20px;">${currentUser.picture ? `<img src="${currentUser.picture}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (currentUser.name||'?')[0]}</div>
+            <div>
+              <div style="font-weight:700;font-size:15px;">${currentUser.name||''}</div>
+              <div style="color:var(--text-dim);font-size:12px;">${currentUser.email||''}</div>
+              <div style="color:var(--text-dim);font-size:12px;font-family:'DM Mono',monospace;">${currentUser.roll_no||''}</div>
+            </div>
+          </div>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:var(--high);border-color:rgba(248,113,113,0.3);">Sign Out</button>
+      </div>
+    </div>`;
+}
+
+/* ════════════════════════════════════════
+   NOTIFICATIONS
+════════════════════════════════════════ */
+async function loadNotifications() {
+  try {
+    const res = await api('/api/emails/notifications/');
+    const data = await res.json();
+    if (data.success && data.count > 0) {
+      notify(`🔔 ${data.count} new notification${data.count>1?'s':''}`, '🔔');
+      // Mark seen after showing
+      setTimeout(() => api('/api/emails/notifications/seen/', { method:'POST' }), 3000);
+    }
+  } catch(e) {}
+}
+
+/* ════════════════════════════════════════
+   NOTIFICATION TOAST
+════════════════════════════════════════ */
+let notifTimer = null;
+function notify(text, icon = '🔔') {
+  clearTimeout(notifTimer);
+  document.getElementById('notifIcon').textContent = icon;
+  document.getElementById('notifText').textContent = text;
+  document.getElementById('notif').classList.add('show');
+  notifTimer = setTimeout(() => document.getElementById('notif').classList.remove('show'), 3500);
+}
+
+/* ════════════════════════════════════════
+   MODAL CLOSE ON BACKDROP
+════════════════════════════════════════ */
+document.getElementById('emailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+boot();
+</script>
+</body>
+</html>

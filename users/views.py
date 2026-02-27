@@ -87,9 +87,7 @@ def callback(request):
 
         user = get_user(google_id)
         if not user.get('roll_no'):
-            return HttpResponseRedirect('http://localhost:3000/onboarding')
-        return HttpResponseRedirect('http://localhost:3000/dashboard')
-
+            return HttpResponseRedirect('http://127.0.0.1:5500/InboxIQ.html')
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
