@@ -233,11 +233,24 @@ def save_calendar_event(google_id, event_data):
         # Fallback: in-memory storage with persistence
         event_data['google_id']  = google_id
         event_data['created_at'] = datetime.utcnow().isoformat()
-        for i, event in enumerate(calendar_col):
-            if event.get('gmail_id') == event_data.get('gmail_id'):
-                calendar_col[i] = event_data
-                save_calendar()  # Persist changes
-                return True
+        
+        # Determine unique key for matching (prefer google_event_id, then gmail_id)
+        match_key = None
+        match_val = None
+        if event_data.get('google_event_id'):
+            match_key = 'google_event_id'
+            match_val = event_data['google_event_id']
+        elif event_data.get('gmail_id'):
+            match_key = 'gmail_id'
+            match_val = event_data['gmail_id']
+
+        if match_key:
+            for i, event in enumerate(calendar_col):
+                if event.get(match_key) == match_val and event.get('google_id') == google_id:
+                    calendar_col[i] = event_data
+                    save_calendar()  # Persist changes
+                    return True
+
         calendar_col.append(event_data)
         save_calendar()  # Persist changes
         return True
@@ -348,6 +361,8 @@ def seed_sample_data(google_id):
             calendar_col.insert_one(event)
         else:
             calendar_col.append(event)
+    if not MONGO_AVAILABLE:
+        save_calendar()
     return len(sample_events)
 
 

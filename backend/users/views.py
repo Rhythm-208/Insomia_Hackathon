@@ -25,7 +25,8 @@ def initiate_google_auth(request):
     
     auth_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true'
+        include_granted_scopes='true',
+        prompt='select_account'
     )
     
     request.session['oauth_state'] = state
@@ -136,11 +137,21 @@ def sync_google_calendar(request):
     
     synced_count = 0
     for event in events:
+        start_date = None
+        start_time = ''
+        
         if 'dateTime' in event['start']:
+            start_date = event['start']['dateTime'][:10]
+            start_time = event['start']['dateTime'][11:16]
+        elif 'date' in event['start']:
+            start_date = event['start']['date']
+            start_time = '00:00'
+            
+        if start_date:
             event_data = {
                 'title': event['summary'],
-                'event_date': event['start']['dateTime'][:10],
-                'event_time': event['start']['dateTime'][11:16] if 'dateTime' in event['start'] else '',
+                'event_date': start_date,
+                'event_time': start_time,
                 'summary': event.get('description', ''),
                 'google_event_id': event['id'],
                 'manual': False

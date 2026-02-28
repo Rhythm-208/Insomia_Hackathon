@@ -8,7 +8,7 @@ import re
 
 def get_gmail_service(token_dict):
     creds = Credentials(
-        token=token_dict['access_token'],
+        token=token_dict.get('token', token_dict.get('access_token')),
         refresh_token=token_dict.get('refresh_token'),
         token_uri='https://oauth2.googleapis.com/token',
         client_id=token_dict['client_id'],

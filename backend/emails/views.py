@@ -62,7 +62,8 @@ def get_user_preferences(request):
     prefs = get_preferences(google_id)
     if not prefs:
         return JsonResponse({'has_preferences': False})
-    prefs['_id'] = str(prefs['_id'])
+    if '_id' in prefs:
+        prefs['_id'] = str(prefs['_id'])
     return JsonResponse({'has_preferences': True, 'preferences': prefs})
 
 
@@ -132,6 +133,8 @@ def fetch_and_classify(request):
             'calendar_added': calendar_count, 'notifications': notify_count,
         })
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
 
