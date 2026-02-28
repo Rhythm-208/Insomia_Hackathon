@@ -70,6 +70,38 @@ FESTS = {
                      "demo", "project", "exhibit"],
         "emails": ["submission", "registration", "demo", "project"]
     },
+    "INSOMNIA": {
+        "full_name": "Insomnia — IITJ Hackathon by DevClub/DW2",
+        "type": "technical",
+        "keywords": ["insomnia", "insomiac", "insomniac", "hackathon", "hack",
+                     "24 hour", "devclub", "development club", "coding competition",
+                     "prize pool", "team registration", "build", "problem statement"],
+        "held": "February-March",
+        "emails": ["registration", "team", "problem statement", "submissions", "demo", "hackathon"]
+    },
+    "TEDX": {
+        "full_name": "TEDx IITJ — College Speaker Event",
+        "type": "cultural",
+        "keywords": ["tedx", "ted", "ted talk", "speaker", "talk", "ideas worth spreading",
+                     "speaker session", "keynote", "panel discussion", "innovation talk"],
+        "held": "varies",
+        "emails": ["speaker", "registration", "event", "attend", "talk", "session"]
+    },
+    "CONVOCATION": {
+        "full_name": "Convocation / Graduation Ceremony",
+        "type": "academic",
+        "keywords": ["convocation", "graduation", "degree ceremony", "Senate"],
+        "emails": ["invitation", "ceremony", "registration", "guest"]
+    },
+    "COLLEGE_EVENT": {
+        "full_name": "General College Event / Institute Activity",
+        "type": "institutional",
+        "keywords": ["institute event", "college event", "open house",
+                     "orientation", "induction", "guest lecture", "seminar",
+                     "panel", "alumni", "industry talk", "placement talk",
+                     "director", "faculty", "institute", "IITJ notice"],
+        "emails": ["notice", "invite", "attend", "register", "event", "session"]
+    },
 }
 
 # ══════════════════════════════════════════
@@ -92,11 +124,12 @@ CLUBS = {
         "emails": ["workshop", "competition", "tutorial", "project", "build"]
     },
     "DSC": {
-        "full_name": "Developer Student Club (Google DSC)",
+        "full_name": "Developer Student Club / DevClub (Google DSC)",
         "type": "technical",
-        "keywords": ["DSC", "GDSC", "google", "android", "web development",
-                     "flutter", "firebase", "cloud", "developer"],
-        "emails": ["solution challenge", "devfest", "study jam", "workshop"]
+        "keywords": ["DSC", "GDSC", "devclub", "dev club", "development club",
+                     "google", "android", "web development", "devs", "enigma",
+                     "flutter", "firebase", "cloud", "developer", "DW2", "dw2"],
+        "emails": ["solution challenge", "devfest", "study jam", "workshop", "hackathon"]
     },
     "BOLTHEADS": {
         "full_name": "Boltheads — Automotive & Aerodynamics Club (SAE India)",
@@ -303,6 +336,17 @@ INTEREST_MAP = {
     "design":                  ["FRAMED", "ATELIERS"],
     "startup":                 ["PROMETEO"],
     "entrepreneurship":        ["PROMETEO"],
+    "hackathon":               ["INSOMNIA", "PROMETEO"],
+    "insomnia":                ["INSOMNIA"],
+    "insomiac":                ["INSOMNIA"],
+    "devclub":                 ["DSC", "INSOMNIA"],
+    "tedx":                    ["TEDX"],
+    "ted talk":                ["TEDX"],
+    "guest lecture":           ["COLLEGE_EVENT"],
+    "seminar":                 ["COLLEGE_EVENT"],
+    "alumni talk":             ["COLLEGE_EVENT"],
+    "placement talk":          ["COLLEGE_EVENT"],
+    "institute notice":        ["COLLEGE_EVENT"],
 
     # individual sports — only activate if user specifically says these
     "football":                ["FOOTBALL_SOCIETY"],

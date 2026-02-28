@@ -137,7 +137,7 @@ def classify_email(email_data: dict, priority_profile: dict, sender: str = '') -
     ignore_list     = [k for k, v in priority_profile.items() if v == 'ignore']
 
     prompt = f"""
-You are classifying an email for an IIT Jodhpur student.
+You are classifying an email for an IIT Jodhpur (IITJ) student.
 
 USER'S PRIORITY PREFERENCES:
 - HIGH priority clubs/fests: {', '.join(high_priority) or 'none'}
@@ -150,31 +150,42 @@ Subject: {subject}
 Body: {body}
 
 CLASSIFICATION RULES:
-1. importance = how much THIS USER cares (based on their preferences above)
-2. urgency    = how time-sensitive is this email (deadline, exam, event soon)
+1. importance = how much THIS USER cares based on their preferences
+2. urgency    = how time-sensitive (deadline, exam, event date soon)
 3. quadrant   = Q1 (high importance + high urgency)
                 Q2 (high importance + low urgency)
                 Q3 (low importance + high urgency)
                 Q4 (low importance + low urgency)
 4. is_informal = true if food deals, canteen, discounts, campus offers
 5. action:
-   - "notify"          → Q1 critical (exam, deadline, HOD email)
-   - "add_to_calendar" → has a date/event worth tracking
+   - "notify"          → Q1 critical (exam, deadline, HOD email, urgent)
+   - "add_to_calendar" → has a date/event worth tracking (hackathons, talks, fests, workshops, TEDx, seminars)
    - "ignore"          → Q4, spam, promotional
+
+EVENT EXTRACTION RULES — extract ONLY if the email mentions a specific event:
+- event_date: Extract the event date as "YYYY-MM-DD". Use 2026 as the year if not specified. If no date found, return null.
+- event_time: Extract the exact start time as "HH:MM" in 24-hour format (e.g., "17:00" for 5 PM). If no time found, return null.
+- event_venue: Extract the venue/location name (e.g., "LT-3", "MNIT Jaipur", "SAC Ground", "Online - Zoom"). Return null if not found.
+- registration_link: Extract any registration/signup URL mentioned. Return null if none.
+- organizer: Name of the club, fest, or person organising (e.g., "RAID Club", "DevClub", "TEDx IITJ"). Return null if not found.
 
 VALID CLASSES: {', '.join(ALL_CLASSES)}
 
 Return ONLY this JSON (no markdown, no explanation):
 {{
-  "class":        "RAID",
-  "importance":   "high",
-  "urgency":      "high",
-  "quadrant":     "Q1",
-  "colour":       "red",
-  "action":       "notify",
-  "summary":      "2-line summary of the email here",
-  "event_date":   "YYYY-MM-DD or null",
-  "is_informal":  false
+  "class":             "RAID",
+  "importance":        "high",
+  "urgency":           "high",
+  "quadrant":          "Q1",
+  "colour":            "red",
+  "action":            "add_to_calendar",
+  "summary":           "2-line summary of the email here",
+  "event_date":        "2026-03-15",
+  "event_time":        "17:00",
+  "event_venue":       "LT-3, Academic Block",
+  "registration_link": "https://...",
+  "organizer":         "RAID Club IITJ",
+  "is_informal":       false
 }}
 
 colour must be: "red" for Q1, "yellow" for Q2, "blue" for Q3, "grey" for Q4
@@ -192,6 +203,9 @@ colour must be: "red" for Q1, "yellow" for Q2, "blue" for Q3, "grey" for Q4
         for field in required:
             if field not in result:
                 result[field] = get_default(field)
+        # Optional rich fields — default to None if missing
+        for field in ['event_time', 'event_venue', 'registration_link', 'organizer']:
+            result.setdefault(field, None)
 
         return result
 
@@ -227,28 +241,36 @@ def classify_all_emails(emails: list, priority_profile: dict) -> list:
 # ── HELPERS ───────────────────────────────────────────
 def get_default(field):
     defaults = {
-        'class':       'OTHER',
-        'importance':  'low',
-        'urgency':     'low',
-        'quadrant':    'Q4',
-        'colour':      'grey',
-        'action':      'ignore',
-        'summary':     'No summary available',
-        'event_date':  None,
-        'is_informal': False,
+        'class':             'OTHER',
+        'importance':        'low',
+        'urgency':           'low',
+        'quadrant':          'Q4',
+        'colour':            'grey',
+        'action':            'ignore',
+        'summary':           'No summary available',
+        'event_date':        None,
+        'event_time':        None,
+        'event_venue':       None,
+        'registration_link': None,
+        'organizer':         None,
+        'is_informal':       False,
     }
     return defaults.get(field)
 
 
 def get_fallback_classification():
     return {
-        'class':       'OTHER',
-        'importance':  'low',
-        'urgency':     'low',
-        'quadrant':    'Q4',
-        'colour':      'grey',
-        'action':      'ignore',
-        'summary':     'Could not classify this email',
-        'event_date':  None,
-        'is_informal': False,
+        'class':             'OTHER',
+        'importance':        'low',
+        'urgency':           'low',
+        'quadrant':          'Q4',
+        'colour':            'grey',
+        'action':            'ignore',
+        'summary':           'Could not classify this email',
+        'event_date':        None,
+        'event_time':        None,
+        'event_venue':       None,
+        'registration_link': None,
+        'organizer':         None,
+        'is_informal':       False,
     }
