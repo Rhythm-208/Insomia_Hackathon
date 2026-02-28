@@ -1,0 +1,15 @@
+[
+  {
+    "gmail_id": null,
+    "title": "Dsa",
+    "summary": "",
+    "event_date": "2026-02-28",
+    "event_time": "10:00",
+    "colour": "red",
+    "quadrant": "Q1",
+    "class": "EXAM",
+    "manual": true,
+    "google_id": "test_user_001",
+    "created_at": "2026-02-28T02:58:48.869823"
+  }
+]
