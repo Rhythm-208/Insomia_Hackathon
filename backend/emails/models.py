@@ -58,6 +58,7 @@ def create_user(google_id, email, name, roll_no, picture, token_dict):
             "last_login": datetime.utcnow().isoformat(),
         }
         users_col.append(user)
+        save_users()
         return str(len(users_col) - 1)
 
 
@@ -73,7 +74,7 @@ def get_user(google_id):
 
 # ── PREFERENCES ───────────────────────────────────────
 def save_preferences(google_id, raw_text, priority_profile,
-                     informals_enabled=True, informal_categories=None):
+                     informals_enabled=True, informal_categories=None, **kwargs):
     if MONGO_AVAILABLE:
         preferences_col.update_one(
             {"google_id": google_id},
@@ -83,6 +84,7 @@ def save_preferences(google_id, raw_text, priority_profile,
                 "priority_profile":    priority_profile,
                 "informals_enabled":   informals_enabled,
                 "informal_categories": informal_categories or ["food", "deals"],
+                "manual_absences":     kwargs.get("manual_absences", {}),
                 "updated_at":          datetime.utcnow().isoformat(),
             }},
             upsert=True
@@ -92,13 +94,14 @@ def save_preferences(google_id, raw_text, priority_profile,
         for pref in preferences_col:
             if pref.get("google_id") == google_id:
                 pref.update({
-                    "google_id": google_id,
                     "raw_text": raw_text,
                     "priority_profile": priority_profile,
                     "informals_enabled": informals_enabled,
                     "informal_categories": informal_categories or ["food", "deals"],
+                    "manual_absences": kwargs.get("manual_absences", pref.get("manual_absences", {})),
                     "updated_at": datetime.utcnow().isoformat(),
                 })
+                save_preferences()
                 return
         preferences_col.append({
             "google_id": google_id,
@@ -106,8 +109,10 @@ def save_preferences(google_id, raw_text, priority_profile,
             "priority_profile": priority_profile,
             "informals_enabled": informals_enabled,
             "informal_categories": informal_categories or ["food", "deals"],
+            "manual_absences": kwargs.get("manual_absences", {}),
             "updated_at": datetime.utcnow().isoformat(),
         })
+        save_preferences()
 
 
 def get_preferences(google_id):
@@ -138,6 +143,7 @@ def save_email(google_id, email_data):
             if email.get('gmail_id') == email_data.get('gmail_id'):
                 return str(emails_col.index(email))
         emails_col.append(email_data)
+        save_emails()
         return str(len(emails_col) - 1)
 
 
@@ -156,6 +162,7 @@ def update_email_classification(google_id, gmail_id, classification):
                 email.update(classification)
                 email['classified'] = True
                 email['classified_at'] = datetime.utcnow().isoformat()
+                save_emails()
                 break
 
 
@@ -234,6 +241,10 @@ def save_calendar_event(google_id, event_data):
         event_data['google_id']  = google_id
         event_data['created_at'] = datetime.utcnow().isoformat()
         
+        # Default attended to False if not present
+        if 'attended' not in event_data:
+            event_data['attended'] = False
+        
         # Determine unique key for matching (prefer google_event_id, then gmail_id)
         match_key = None
         match_val = None
@@ -247,6 +258,8 @@ def save_calendar_event(google_id, event_data):
         if match_key:
             for i, event in enumerate(calendar_col):
                 if event.get(match_key) == match_val and event.get('google_id') == google_id:
+                    # PRESERVE ATTENDED STATUS IF IT EXISTS
+                    event_data['attended'] = event.get('attended', False)
                     calendar_col[i] = event_data
                     save_calendar()  # Persist changes
                     return True
@@ -254,6 +267,38 @@ def save_calendar_event(google_id, event_data):
         calendar_col.append(event_data)
         save_calendar()  # Persist changes
         return True
+
+
+def update_event_attendance(google_id, event_id, attended):
+    """Toggle attendance for a specific event"""
+    if calendar_table is not None:
+        try:
+            from bson import ObjectId
+            calendar_table.update_one(
+                {"google_id": google_id, "_id": ObjectId(event_id)},
+                {"$set": {"attended": attended}}
+            )
+            return True
+        except Exception:
+            return False
+    else:
+        try:
+            # For fallback, id is the index
+            idx = int(event_id)
+            if 0 <= idx < len(calendar_col):
+                if calendar_col[idx].get('google_id') == google_id:
+                    calendar_col[idx]['attended'] = attended
+                    save_calendar()
+                    return True
+            # Search by google_event_id or gmail_id if not index
+            for event in calendar_col:
+                if (event.get('google_event_id') == event_id or event.get('gmail_id') == event_id) and event.get('google_id') == google_id:
+                    event['attended'] = attended
+                    save_calendar()
+                    return True
+            return False
+        except Exception:
+            return False
 
 
 def get_calendar_events(google_id, month=None, year=None):
@@ -292,6 +337,7 @@ def create_notification(google_id, gmail_id, message, importance):
             "message": message, "importance": importance,
             "seen": False, "created_at": datetime.utcnow().isoformat(),
         })
+        save_notifications()
 
 
 def get_unseen_notifications(google_id):
@@ -320,6 +366,7 @@ def mark_notifications_seen(google_id):
         for notif in notifications_col:
             if notif.get('google_id') == google_id and not notif.get('seen'):
                 notif['seen'] = True
+                save_notifications()
 
 
 # ── SEED SAMPLE DATA (for testing without real Gmail) ─
